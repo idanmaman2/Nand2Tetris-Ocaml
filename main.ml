@@ -39,11 +39,11 @@ let tokenizer tokens namespace =
                         | _ -> raise (CommandError "Invalid Pointer value..." ) 
       | _ -> raise (CommandError "Wrong Segment in pop command" ) in
     String.concat "\n" [ "@SP"  ;  "A=M-1" ; "D=M" ; valueToPush ; "M=D" ; "@SP" ; "M=M-1" ; ""] 
-  | "or" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ;"A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D|M" ; ""]
-  | "and" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ;"A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D&M" ; ""]
-  | "neg" -> String.concat "\n" ["@SP" ; "A=M-1" ; "M=-M"]
-  | "add" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ;"A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D+M" ; ""]
-  | "sub" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ;"A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D-M" ; ""]
+  | "or" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D|M" ; ""]
+  | "and" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M"  ; "D=M" ; "@SP" ;"A=M-1" ; "M=D&M" ; ""]
+  | "neg" -> String.concat "\n" ["@SP" ; "A=M-1" ; "M=-M"; ""]
+  | "add" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=D+M" ; ""]
+  | "sub" -> String.concat "\n" ["@SP"; "M=M-1" ; "A=M" ; "D=M" ; "@SP" ;"A=M-1" ; "M=M-D" ; ""]
   | "not" -> String.concat "\n" ["@SP" ; "A=M-1" ; "M=!M" ;""]
   | "eq" -> 
     tag_count := !tag_count + 1 ; 
@@ -56,13 +56,13 @@ let tokenizer tokens namespace =
     let tag_name = String.cat "TAG_" (string_of_int !tag_count) in 
     let true_tag = String.cat "IF_TRUE" tag_name in 
     let false_tag = String.cat "IF_FALSE" tag_name in
-    String.concat "\n" ["@SP" ; "A=M-1" ; "D=M"; "A=A-1" ; "D=D-M" ; (String.cat "@" true_tag) ;"D;JGT" ; "D=0" ; (String.cat "@" false_tag) ; "0;JMP" ; String.cat (String.cat "(" true_tag ) ")"; "D=-1" ; String.cat (String.cat "(" false_tag ) ")"; "@SP" ; "A=M-1" ; "A=A-1"  ;"M=D" ; "@SP" ;"M=M-1" ; ""];
+    String.concat "\n" ["@SP" ; "A=M-1" ; "D=M"; "A=A-1" ; "D=D-M" ; (String.cat "@" true_tag) ;"D;JLT" ; "D=0" ; (String.cat "@" false_tag) ; "0;JMP" ; String.cat (String.cat "(" true_tag ) ")"; "D=-1" ; String.cat (String.cat "(" false_tag ) ")"; "@SP" ; "A=M-1" ; "A=A-1"  ;"M=D" ; "@SP" ;"M=M-1" ; ""];
   | "lt" -> 
   tag_count := !tag_count + 1 ; 
-    let tag_name = String.cat "TAG_" (string_of_int !tag_count) in 
+    let tag_name = String.cat "TAG" (string_of_int !tag_count) in 
     let true_tag = String.cat "IF_TRUE" tag_name in 
     let false_tag = String.cat "IF_FALSE" tag_name in
-    String.concat "\n" ["@SP" ; "A=M-1" ; "D=M"; "A=A-1" ; "D=D-M" ; (String.cat "@" true_tag) ;"D;JLT" ; "D=0" ; (String.cat "@" false_tag) ; "0;JMP" ; String.cat (String.cat "(" true_tag ) ")"; "D=-1" ; String.cat (String.cat "(" false_tag ) ")"; "@SP" ; "A=M-1" ; "A=A-1"  ;"M=D" ; "@SP" ;"M=M-1" ; ""];
+    String.concat "\n" ["@SP" ; "A=M-1" ; "D=M"; "A=A-1" ; "D=D-M" ; (String.cat "@" true_tag) ;"D;JGT" ; "D=0" ; (String.cat "@" false_tag) ; "0;JMP" ; String.cat (String.cat "(" true_tag ) ")"; "D=-1" ; String.cat (String.cat "(" false_tag ) ")"; "@SP" ; "A=M-1" ; "A=A-1"  ;"M=D" ; "@SP" ;"M=M-1" ; ""];
   | _ -> 
     let regex = regexp "^([\\s]*[\\/\\/|].*)?$" in 
     if string_match regex ftoken 0 then
